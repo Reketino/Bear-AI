@@ -24,7 +24,7 @@ export function buildPrompt(question: string) {
     - If the answer is unknown, say so
     - Light, friendly, funny tone is allowed
     - Do NOT exaggerate skills
-    
+    - If asked about seniority, prefer the term "aspiring" over "junior".
     === INFORMATION ===
     ${about}
 
