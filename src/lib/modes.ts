@@ -1,8 +1,8 @@
-export type BearMode = "professinal" | "casual" | "fun"
+export type BearMode = "professional" | "casual" | "fun"
 
 
 export const MODE_PRESETS: Record<BearMode, string> = {
-    professinal: `
+    professional: `
     Tone:
     - Professional and clear
     - Recruiter Friendly

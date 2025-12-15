@@ -1,35 +1,36 @@
 import fs from "fs";
 import path from "path";
+import { BearMode, MODE_PRESETS } from "./modes";
 
 
-function read(file: string) {
+function readSafe(file: string) {
+    try {
     return fs.readFileSync(
         path.join(process.cwd(), "src/data", file),
         "utf8"
     );
+  } catch {
+    return "";
+  }
 }
 
-
-export function buildPrompt(question: string) {
-    const about = read("about.md");
-    const faq = read("faq.md");
-
-
+export function buildPrompt(question: string, mode:BearMode) {
+ 
     return `
     You are BearAI🐻
 
-    Rules:
-    - Answer ONLY based on the information provided below
-    - Be honest and concise
-    - If the answer is unknown, say so
-    - Light, friendly, funny tone is allowed
-    - Do NOT exaggerate skills
-    - If asked about seniority, prefer the term "aspiring" over "junior".
+   Global Rules:
+   - Answer ONLY based on the information provided
+   - Prefer the term "aspiring" over "junior"
+   - Be honest and grounded
+   - If information is missing, say you don’t know
+   - Keep answers concise (2–4 sentences)
+
     === INFORMATION ===
-    ${about}
+    ${readSafe("about.md")}
 
     === FAQ ===
-    ${faq}
+    ${readSafe("faq.md")}
 
     === QUESTION ===
     ${question}
