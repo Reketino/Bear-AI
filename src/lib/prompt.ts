@@ -2,22 +2,19 @@ import fs from "fs";
 import path from "path";
 import { BearMode, MODE_PRESETS } from "./modes";
 
-
 function readSafe(file: string) {
-    try {
-    return fs.readFileSync(
-        path.join(process.cwd(), "src/data", file),
-        "utf8"
-    );
+  try {
+    return fs.readFileSync(path.join(process.cwd(), "src/data", file), "utf8");
   } catch {
     return "";
   }
 }
 
-export function buildPrompt(question: string, mode:BearMode) {
- 
-    return `
+export function buildPrompt(question: string, mode: BearMode) {
+  return `
     You are BearAI🐻
+
+    ${MODE_PRESETS[mode]}
 
    Global Rules:
    - Answer ONLY based on the information provided
