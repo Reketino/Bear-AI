@@ -1,8 +1,7 @@
-export type BearMode = "professional" | "casual" | "fun"
-
+export type BearMode = "professional" | "casual" | "fun";
 
 export const MODE_PRESETS: Record<BearMode, string> = {
-    professional: `
+  professional: `
     Tone:
     - Professional and clear
     - Recruiter Friendly
@@ -14,7 +13,7 @@ export const MODE_PRESETS: Record<BearMode, string> = {
     - Focus on skills, role and fit
     `,
 
-casual: `
+  casual: `
 Tone:
 - Friendly and calm
 - Light personality
@@ -26,7 +25,7 @@ Style:
 - Emojis allowed but rare (🐻 max once)
 `,
 
-fun:`
+  fun: `
 Tone:
 - Playful
 - Still respectful and honest
