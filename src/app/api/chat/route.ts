@@ -16,14 +16,34 @@ globalThis._bearRateLimit ??= new Map<string, RateEntry>();
 
 const rateLimit: Map<string, RateEntry> = globalThis._bearRateLimit;
 
-
 import { buildPrompt } from "@/lib/prompt";
 import { openai } from "@/lib/ai";
 import { BearMode } from "@/lib/modes";
 
 export async function POST(req: Request) {
-  const body = await req.json();
+  
+  const ip = 
+  req.headers.get("x-forwarded-for") ??
+  "unknown"
 
+  const now = Date.now();
+  const entry = rateLimit.get(ip);
+
+  if (!entry || now - entry.lastReset > RATE_LIMIT_WINDOW) {
+    rateLimit.set(ip, { count: 1, lastReset: now });
+  } else {
+    if (entry.count >= MAX_REQUESTS) {
+      return Response.json(
+        {
+          answer: " 🐻 BearAI is out of breath, give him a sec to recover."
+        },
+        { status: 429 }
+      );
+    }
+    entry.count++;
+  }
+  
+  const body = await req.json();
   const question: string = body.question;
   const mode: BearMode = body.mode ?? "professional";
 
