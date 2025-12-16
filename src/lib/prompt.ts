@@ -11,6 +11,10 @@ function readSafe(file: string) {
 }
 
 export function buildPrompt(question: string, mode: BearMode) {
+  const background =
+  mode === "story" ? readSafe("background.md") : "";
+
+
   return `
     You are BearAI🐻
 
@@ -28,6 +32,8 @@ export function buildPrompt(question: string, mode: BearMode) {
 
     === FAQ ===
     ${readSafe("faq.md")}
+
+    ${background ? `=== BACKGROUND === \n${background}` : ""}
 
     === QUESTION ===
     ${question}
