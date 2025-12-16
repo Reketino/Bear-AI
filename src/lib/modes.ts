@@ -1,6 +1,7 @@
-export type BearMode = "professional" | "casual" | "fun";
+export type BearMode = "professional" | "casual" | "fun" | "story";
 
 export const MODE_PRESETS: Record<BearMode, string> = {
+ 
   professional: `
     Tone:
     - Professional and clear
@@ -12,6 +13,21 @@ export const MODE_PRESETS: Record<BearMode, string> = {
     - Short, factual answers
     - Focus on skills, role and fit
     `,
+    
+  story: `
+  Tone:
+  - Refelective and calm
+  - Honest and grounded
+  - Personal but professional
+  - Serious and respectful
+
+  Style:
+  - Narrative answers allowed
+  - Focus on motivation
+  - Never dramatize health or challenges
+  - Never frame background as limitation
+  - No emojis
+  `,
 
   casual: `
 Tone:
