@@ -1,3 +1,22 @@
+// defined "bearRateLimit" so TS dosen't throw error
+declare global {
+  var _bearRateLimit: Map<string, RateEntry> | undefined
+}
+
+// Simple rate limiter
+const RATE_LIMIT_WINDOW = 10_000;
+const MAX_REQUESTS = 5;
+
+type RateEntry = {
+  count: number;
+  lastReset: number;
+};
+
+globalThis._bearRateLimit ??= new Map<string, RateEntry>();
+
+const rateLimit: Map<string, RateEntry> = globalThis._bearRateLimit;
+
+
 import { buildPrompt } from "@/lib/prompt";
 import { openai } from "@/lib/ai";
 import { BearMode } from "@/lib/modes";
