@@ -1,30 +1,42 @@
-// defined "bearRateLimit" so TS dosen't throw error
-declare global {
-  var _bearRateLimit: Map<string, RateEntry> | undefined
-}
 
-// Simple rate limiter
-const RATE_LIMIT_WINDOW = 10_000;
-const MAX_REQUESTS = 5;
+//Cors headers for allowing frontend
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
 
 type RateEntry = {
   count: number;
   lastReset: number;
 };
 
-globalThis._bearRateLimit ??= new Map<string, RateEntry>();
+// IN-MEMORY GLOBAL RATE LIMIT STORE
+declare global {
+  var _bearRateLimit: Map<string, RateEntry> | undefined;
+}
 
-const rateLimit: Map<string, RateEntry> = globalThis._bearRateLimit;
+// SIMPLE RATE LIMITER FOR IN-MEMORY CONFIG
+const RATE_LIMIT_WINDOW = 10_000;
+const MAX_REQUESTS = 5;
+
+globalThis._bearRateLimit ??= new Map<string, RateEntry>();
+const rateLimit = globalThis._bearRateLimit as Map<string, RateEntry>;
 
 import { buildPrompt } from "@/lib/prompt";
 import { openai } from "@/lib/ai";
 import { BearMode } from "@/lib/modes";
 
+// CORS PREFLIGHT HANDLER
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: corsHeaders,
+  });
+}
+// MAIN API HANDLING
 export async function POST(req: Request) {
-  
-  const ip = 
-  req.headers.get("x-forwarded-for") ??
-  "unknown"
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
 
   const now = Date.now();
   const entry = rateLimit.get(ip);
@@ -33,24 +45,38 @@ export async function POST(req: Request) {
     rateLimit.set(ip, { count: 1, lastReset: now });
   } else {
     if (entry.count >= MAX_REQUESTS) {
-      return Response.json(
+      return new Response(
+        JSON.stringify({
+          answer: "🐻 BearAI is out of breath, give him a sec to recover",
+        }),
         {
-          answer: " 🐻 BearAI is out of breath, give him a sec to recover."
-        },
-        { status: 429 }
+          status: 429,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
+        }
       );
     }
     entry.count++;
   }
-  
+
   const body = await req.json();
   const question: string = body.question;
   const mode: BearMode = body.mode ?? "professional";
 
   if (!question) {
-    return Response.json(
-      { answer: "No question for BearAI provided." },
-      { status: 400 }
+    return new Response(
+      JSON.stringify({
+        answer: "No question for BearAI provided.",
+      }),
+      {
+        status: 400,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
+      }
     );
   }
 
@@ -69,5 +95,11 @@ export async function POST(req: Request) {
     completion.choices[0]?.message?.content ??
     "Sorry, I don't have enough information to answer that.";
 
-  return Response.json({ answer });
+  return new Response(JSON.stringify({ answer }), {
+    status: 200,
+    headers: {
+      ...corsHeaders,
+      "Content-Type": "application/json",
+    },
+  });
 }
