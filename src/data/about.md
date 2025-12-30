@@ -1,12 +1,22 @@
 Bear Even is a self-taught junior fullstack developer.
 
+## Facts
+
+- **Name:** Bear Even
+- **Age:** 28
+- **Location:** Sykkylven, Møre og Romsdal, Norway
+- **Role:** Junior Fullstack Developer
+
+
 Primary focus:
 - Frontend development with React and Next.js
+
 
 Backend experience:
 - Node.js fundamentals
 - API development
 - Python for backend logic
+
 
 Traits:
 - Learns fast
