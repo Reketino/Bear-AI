@@ -1,5 +1,9 @@
 
-//Cors headers for allowing frontend
+import { buildPrompt } from "@/lib/prompt";
+import { getGroqClient } from "@/lib/ai";
+import type { BearMode } from "@/lib/modes";
+
+// CORS configuration
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -11,95 +15,161 @@ type RateEntry = {
   lastReset: number;
 };
 
-// IN-MEMORY GLOBAL RATE LIMIT STORE
+type ChatRequest = {
+  question?: unknown;
+  mode?: unknown;
+};
+
 declare global {
   var _bearRateLimit: Map<string, RateEntry> | undefined;
 }
 
-// SIMPLE RATE LIMITER FOR IN-MEMORY CONFIG
 const RATE_LIMIT_WINDOW = 10_000;
 const MAX_REQUESTS = 5;
+const MAX_QUESTION_LENGTH = 2_000;
+
+const VALID_MODES: BearMode[] = [
+  "professional",
+  "casual",
+  "fun",
+  "story",
+];
 
 globalThis._bearRateLimit ??= new Map<string, RateEntry>();
-const rateLimit = globalThis._bearRateLimit as Map<string, RateEntry>;
 
-import { buildPrompt } from "@/lib/prompt";
-import { openai } from "@/lib/ai";
-import { BearMode } from "@/lib/modes";
+const rateLimit = globalThis._bearRateLimit;
 
-// CORS PREFLIGHT HANDLER
+function jsonResponse(
+  data: { answer: string },
+  status: number
+) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      ...corsHeaders,
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store",
+    },
+  });
+}
+
+// CORS preflight
 export async function OPTIONS() {
   return new Response(null, {
     status: 204,
     headers: corsHeaders,
   });
 }
-// MAIN API HANDLING
+
+// Main API handler
 export async function POST(req: Request) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
+  try {
+    // Identify visitor
+    const ip =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      "unknown";
 
-  const now = Date.now();
-  const entry = rateLimit.get(ip);
+    // Rate limiting
+    const now = Date.now();
+    const entry = rateLimit.get(ip);
 
-  if (!entry || now - entry.lastReset > RATE_LIMIT_WINDOW) {
-    rateLimit.set(ip, { count: 1, lastReset: now });
-  } else {
-    if (entry.count >= MAX_REQUESTS) {
-      return new Response(
-        JSON.stringify({
-          answer: "🐻 BearAI is out of breath, give him a sec to recover",
-        }),
-        {
-          status: 429,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
+    if (!entry || now - entry.lastReset > RATE_LIMIT_WINDOW) {
+      rateLimit.set(ip, {
+        count: 1,
+        lastReset: now,
+      });
+    } else {
+      if (entry.count >= MAX_REQUESTS) {
+        return jsonResponse(
+          {
+            answer: "🐻 BearAI is out of breath. Give him a moment!",
           },
-        }
+          429
+        );
+      }
+
+      entry.count++;
+    }
+
+    // Parse request
+    const body = (await req.json()) as ChatRequest;
+
+    const question =
+      typeof body.question === "string"
+        ? body.question.trim()
+        : "";
+
+    const mode = VALID_MODES.includes(body.mode as BearMode)
+      ? (body.mode as BearMode)
+      : "professional";
+
+    // Validate question
+    if (!question) {
+      return jsonResponse(
+        {
+          answer: "No question for BearAI provided.",
+        },
+        400
       );
     }
-    entry.count++;
-  }
 
-  const body = await req.json();
-  const question: string = body.question;
-  const mode: BearMode = body.mode ?? "professional";
-
-  if (!question) {
-    return new Response(
-      JSON.stringify({
-        answer: "No question for BearAI provided.",
-      }),
-      {
-        status: 400,
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
+    if (question.length > MAX_QUESTION_LENGTH) {
+      return jsonResponse(
+        {
+          answer: "That's a little too much for BearAI! Keep it shorter.",
         },
-      }
+        400
+      );
+    }
+
+    // Build BearAI prompt
+    const prompt = buildPrompt(question, mode);
+
+    // Request Groq
+    const completion =  await getGroqClient().chat.completions.create({
+      model: "openai/gpt-oss-120b",
+      messages: [
+        {
+          role: "system",
+          content: "You are BearAI.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      reasoning_effort: "low",
+      max_completion_tokens: 500,
+    });
+
+    const answer =
+      completion.choices[0]?.message?.content ??
+      "Sorry, I don't have enough information to answer that.";
+
+    return jsonResponse({ answer }, 200);
+  } catch (error) {
+    // Provider rate limit
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "status" in error &&
+      error.status === 429
+    ) {
+      return jsonResponse(
+        {
+          answer: "🐻 BearAI needs a short break. Try again soon!",
+        },
+        429
+      );
+    }
+
+    console.error("BearAI API error:", error);
+
+    return jsonResponse(
+      {
+        answer: "Something went wrong. BearAI will be back shortly!",
+      },
+      500
     );
   }
-
-  const prompt = buildPrompt(question, mode);
-
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [
-      { role: "system", content: "You are BearAI." },
-      { role: "user", content: prompt },
-    ],
-    temperature: mode === "fun" ? 0.5 : 0.3,
-  });
-
-  const answer =
-    completion.choices[0]?.message?.content ??
-    "Sorry, I don't have enough information to answer that.";
-
-  return new Response(JSON.stringify({ answer }), {
-    status: 200,
-    headers: {
-      ...corsHeaders,
-      "Content-Type": "application/json",
-    },
-  });
 }

@@ -1,9 +1,15 @@
-import OpenAI from "openai";
+import Groq from "groq-sdk";
 
-if (!process.env.OPENAI_API_KEY) {
-    throw new Error("BearAI can't find his keys💩");
+let groq: Groq | undefined;
+
+export function getGroqClient() {
+  if (!process.env.GROQ_API_KEY) {
+    throw new Error("BearAI can't find his Groq key 🐻");
+  }
+
+  groq ??= new Groq({
+    apiKey: process.env.GROQ_API_KEY,
+  });
+
+  return groq;
 }
-
-export const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
