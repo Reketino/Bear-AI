@@ -16,7 +16,6 @@ export function getGroqClient(): Groq {
   return groq;
 }
 
-
 export function getGeminiClient(): GoogleGenAI {
   if (!process.env.GEMINI_API_KEY) {
     throw new Error("BearAI can't find his Gemini key 🐻");
