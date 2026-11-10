@@ -3,7 +3,6 @@ import { buildPrompt } from "@/lib/prompt";
 import { getGroqClient } from "@/lib/ai";
 import type { BearMode } from "@/lib/modes";
 
-// CORS configuration
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -53,7 +52,6 @@ function jsonResponse(
   });
 }
 
-// CORS preflight
 export async function OPTIONS() {
   return new Response(null, {
     status: 204,
@@ -61,15 +59,13 @@ export async function OPTIONS() {
   });
 }
 
-// Main API handler
+
 export async function POST(req: Request) {
   try {
-    // Identify visitor
     const ip =
       req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
       "unknown";
 
-    // Rate limiting
     const now = Date.now();
     const entry = rateLimit.get(ip);
 
@@ -91,7 +87,6 @@ export async function POST(req: Request) {
       entry.count++;
     }
 
-    // Parse request
     const body = (await req.json()) as ChatRequest;
 
     const question =
@@ -103,7 +98,7 @@ export async function POST(req: Request) {
       ? (body.mode as BearMode)
       : "professional";
 
-    // Validate question
+
     if (!question) {
       return jsonResponse(
         {
@@ -121,11 +116,9 @@ export async function POST(req: Request) {
         400
       );
     }
-
-    // Build BearAI prompt
+    
     const prompt = buildPrompt(question, mode);
 
-    // Request Groq
     const completion =  await getGroqClient().chat.completions.create({
       model: "openai/gpt-oss-120b",
       messages: [
