@@ -1,3 +1,4 @@
+import { GoogleGenAI } from "@google/genai";
 import Groq from "groq-sdk";
 
 let groq: Groq | undefined;
@@ -12,4 +13,10 @@ export function getGroqClient() {
   });
 
   return groq;
+}
+
+export function getGeminiClient(): GoogleGenAI {
+  if (!process.env.GEMINI_API_KEY) {
+    throw new Error("BearAI can't find his Gemini key 🐻");
+  }
 }
