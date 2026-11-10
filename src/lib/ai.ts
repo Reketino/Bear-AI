@@ -23,4 +23,6 @@ export function getGeminiClient(): GoogleGenAI {
   gemini ??= new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY,
   });
+
+  return gemini;
 }
