@@ -19,4 +19,8 @@ export function getGeminiClient(): GoogleGenAI {
   if (!process.env.GEMINI_API_KEY) {
     throw new Error("BearAI can't find his Gemini key 🐻");
   }
+
+  gemini ??= new GoogleGenAI({
+    apiKey: process.env.GEMINI_API_KEY,
+  });
 }
