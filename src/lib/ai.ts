@@ -2,6 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import Groq from "groq-sdk";
 
 let groq: Groq | undefined;
+let gemini: GoogleGenAI | undefined;
 
 export function getGroqClient() {
   if (!process.env.GROQ_API_KEY) {
