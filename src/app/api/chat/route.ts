@@ -141,7 +141,6 @@ export async function POST(req: Request) {
 
     return jsonResponse({ answer }, 200);
   } catch (error) {
-    // Provider rate limit
     if (
       typeof error === "object" &&
       error !== null &&
