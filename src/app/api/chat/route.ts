@@ -38,6 +38,13 @@ globalThis._bearRateLimit ??= new Map<string, RateEntry>();
 
 const rateLimit = globalThis._bearRateLimit;
 
+class AllProvidersFailedError extends Error {
+  constructor(provider: string) {
+    super(`${provider} returned an empty response.`);
+    this.name = "EmptyProviderResponseError";
+  }
+}
+
 function jsonResponse(
   data: { answer: string },
   status: number
