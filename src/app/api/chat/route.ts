@@ -79,7 +79,43 @@ function shouldFallbackToGemini(error: unknown): boolean {
     }
   }
 
+  if (error instanceof Error) {
+    return [
+      "APIConnectionError",
+      "APIConnectionTimeoutError",
+      "AbortError",
+      "TimeoutError",
+    ].includes(error.name);
+  }
+
   return false;
+}
+
+async function generateWithGroq(prompt: string): Promise<string> {
+  const completion = await getGroqClient().chat.completions.create({
+        model: "openai/gpt-oss-120b",
+    messages: [
+      {
+        role: "system",
+        content: "You are BearAI.",
+      },
+      {
+        role: "user",
+        content: prompt,
+      },
+    ],
+    reasoning_effort: "low",
+    max_completion_tokens: 500,
+  });
+
+  const answer = completion.choices[0]?.message?.content?.trim();
+  
+  if (!answer) {
+    throw new EmptyProviderResponseError("Groq");
+  } 
+
+  return answer;
+  
 }
 
 export async function OPTIONS() {
