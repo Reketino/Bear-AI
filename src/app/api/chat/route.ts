@@ -73,7 +73,13 @@ function shouldFallbackToGemini(error: unknown): boolean {
   
   if (typeof error === "object" && error !== null && "status" in error) {
     const status = error.status;
+
+    if (typeof status === "number") {
+      return status === 429 || status >= 500;
+    }
   }
+
+  return false;
 }
 
 export async function OPTIONS() {
