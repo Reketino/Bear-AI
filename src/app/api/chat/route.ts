@@ -45,6 +45,13 @@ class AllProvidersFailedError extends Error {
   }
 }
 
+class EmptyProviderResponseError extends Error {
+  constructor(provider: string) {
+    super(`${provider} returned an empty response.`);
+    this.name = "EmptyProviderResponseError";
+  }
+}
+
 function jsonResponse(
   data: { answer: string },
   status: number
