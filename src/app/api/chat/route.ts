@@ -79,8 +79,19 @@ function shouldFallbackToGemini(error: unknown): boolean {
     }
   }
 
+  if (error instanceof Error) {
+    return [
+      "APIConnectionError",
+      "APIConnectionTimeoutError",
+      "AbortError",
+      "TimeoutError",
+    ].includes(error.name);
+  }
+
   return false;
 }
+
+
 
 export async function OPTIONS() {
   return new Response(null, {
