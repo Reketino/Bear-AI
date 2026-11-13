@@ -110,6 +110,11 @@ async function generateWithGroq(prompt: string): Promise<string> {
 
   const answer = completion.choices[0]?.message?.content?.trim();
   
+  if (!answer) {
+    throw new EmptyProviderResponseError("Groq");
+  } 
+
+  return answer;
   
 }
 
