@@ -71,6 +71,9 @@ function shouldFallbackToGemini(error: unknown): boolean {
     return true;
   }
   
+  if (typeof error === "object" && error !== null && "status" in error) {
+    const status = error.status;
+  }
 }
 
 export async function OPTIONS() {
