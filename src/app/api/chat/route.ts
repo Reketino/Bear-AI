@@ -66,6 +66,13 @@ function jsonResponse(
   });
 }
 
+function shouldFallbackToGemini(error: unknown): boolean {
+  if (error instanceof EmptyProviderResponseError) {
+    return true;
+  }
+  
+}
+
 export async function OPTIONS() {
   return new Response(null, {
     status: 204,
