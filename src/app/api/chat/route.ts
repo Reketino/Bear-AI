@@ -107,6 +107,9 @@ async function generateWithGroq(prompt: string): Promise<string> {
     reasoning_effort: "low",
     max_completion_tokens: 500,
   });
+
+  const answer = completion.choices[0]?.message?.content?.trim();
+  
   
 }
 
