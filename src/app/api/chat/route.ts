@@ -91,7 +91,9 @@ function shouldFallbackToGemini(error: unknown): boolean {
   return false;
 }
 
-
+async function generateWithGroq(prompt: string): Promise<string> {
+  
+}
 
 export async function OPTIONS() {
   return new Response(null, {
