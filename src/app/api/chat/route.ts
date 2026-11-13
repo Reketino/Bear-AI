@@ -45,6 +45,13 @@ class AllProvidersFailedError extends Error {
   }
 }
 
+class EmptyProviderResponseError extends Error {
+  constructor(provider: string) {
+    super(`${provider} returned an empty response.`);
+    this.name = "EmptyProviderResponseError";
+  }
+}
+
 function jsonResponse(
   data: { answer: string },
   status: number
@@ -57,6 +64,22 @@ function jsonResponse(
       "Cache-Control": "no-store",
     },
   });
+}
+
+function shouldFallbackToGemini(error: unknown): boolean {
+  if (error instanceof EmptyProviderResponseError) {
+    return true;
+  }
+  
+  if (typeof error === "object" && error !== null && "status" in error) {
+    const status = error.status;
+
+    if (typeof status === "number") {
+      return status === 429 || status >= 500;
+    }
+  }
+
+  return false;
 }
 
 export async function OPTIONS() {
