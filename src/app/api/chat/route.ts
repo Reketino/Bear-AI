@@ -92,6 +92,21 @@ function shouldFallbackToGemini(error: unknown): boolean {
 }
 
 async function generateWithGroq(prompt: string): Promise<string> {
+  const completion = await getGroqClient().chat.completions.create({
+        model: "openai/gpt-oss-120b",
+    messages: [
+      {
+        role: "system",
+        content: "You are BearAI.",
+      },
+      {
+        role: "user",
+        content: prompt,
+      },
+    ],
+    reasoning_effort: "low",
+    max_completion_tokens: 500,
+  });
   
 }
 
