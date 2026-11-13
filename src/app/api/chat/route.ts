@@ -1,6 +1,6 @@
 
 import { buildPrompt } from "@/lib/prompt";
-import { getGroqClient } from "@/lib/ai";
+import { getGroqClient, getGeminiClient } from "@/lib/ai";
 import type { BearMode } from "@/lib/modes";
 
 const corsHeaders = {
@@ -115,16 +115,25 @@ async function generateWithGroq(prompt: string): Promise<string> {
   } 
 
   return answer;
-  
 }
 
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 204,
-    headers: corsHeaders,
+async function generateWithGemini(prompt: string): Promise<string> {
+  const response = await getGeminiClient().models.generateContent({
+    model: "gemini-3.8-flash",
+    contents: prompt,
+    config: {
+      maxOutputTokens: 500,
+    },
   });
-}
 
+  const answer = response.text?.trim();
+
+  if (!answer) {
+    throw new EmptyProviderResponseError("Gemini");
+  }
+
+  return answer;
+}
 
 export async function POST(req: Request) {
   try {
