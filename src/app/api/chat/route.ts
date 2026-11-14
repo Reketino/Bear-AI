@@ -39,9 +39,9 @@ globalThis._bearRateLimit ??= new Map<string, RateEntry>();
 const rateLimit = globalThis._bearRateLimit;
 
 class AllProvidersFailedError extends Error {
-  constructor(provider: string) {
-    super(`${provider} returned an empty response.`);
-    this.name = "EmptyProviderResponseError";
+  constructor() {
+    super("All AI providers failed.");
+    this.name = "AllProvidersFailedError";
   }
 }
 
@@ -134,6 +134,31 @@ async function generateWithGemini(prompt: string): Promise<string> {
 
   return answer;
 }
+
+async function generateAnswer(prompt: string): Promise<string> {
+  try {
+    return await generateWithGroq(prompt);
+  } catch (groqError) {
+    if (!shouldFallbackToGemini(groqError)) {
+      throw groqError;
+    }
+    console.warn(
+      "Groq unavailable. Switching to Gemini.",
+      groqError
+    );
+  }
+
+  try {
+    return await generateWithGemini(prompt);
+  } catch (geminiError) {
+    console.error("Both AI providers failed:", {
+      geminiError,
+    });
+
+    throw new AllProvidersFailedError();
+  }
+}
+
 
 export async function POST(req: Request) {
   try {
