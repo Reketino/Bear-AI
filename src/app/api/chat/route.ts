@@ -229,7 +229,15 @@ export async function POST(req: Request) {
 
     return jsonResponse({ answer }, 200);
   } catch (error) {
-    
+    if (error instanceof AllProvidersFailedError) {
+      return jsonResponse(
+                {
+          answer:
+            "🐻 Both of BearAI's AI providers are temporarily unavailable. Please try again soon!",
+        },
+        503
+      );
+    } 
 
     if (
       typeof error === "object" &&
