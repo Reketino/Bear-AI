@@ -93,7 +93,7 @@ function shouldFallbackToGemini(error: unknown): boolean {
 
 async function generateWithGroq(prompt: string): Promise<string> {
   const completion = await getGroqClient().chat.completions.create({
-        model: "openai/gpt-oss-120b",
+    model: "openai/gpt-oss-120b",
     messages: [
       {
         role: "system",
@@ -109,10 +109,10 @@ async function generateWithGroq(prompt: string): Promise<string> {
   });
 
   const answer = completion.choices[0]?.message?.content?.trim();
-  
+
   if (!answer) {
     throw new EmptyProviderResponseError("Groq");
-  } 
+  }
 
   return answer;
 }
@@ -159,6 +159,12 @@ async function generateAnswer(prompt: string): Promise<string> {
   }
 }
 
+export async function OPTIONS() {
+  return new Response(null, {
+    status:204,
+    headers: corsHeaders,
+  });
+}
 
 export async function POST(req: Request) {
   try {
@@ -219,28 +225,20 @@ export async function POST(req: Request) {
     
     const prompt = buildPrompt(question, mode);
 
-    const completion =  await getGroqClient().chat.completions.create({
-      model: "openai/gpt-oss-120b",
-      messages: [
-        {
-          role: "system",
-          content: "You are BearAI.",
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      reasoning_effort: "low",
-      max_completion_tokens: 500,
-    });
-
-    const answer =
-      completion.choices[0]?.message?.content ??
-      "Sorry, I don't have enough information to answer that.";
+    const answer = await generateAnswer(prompt);
 
     return jsonResponse({ answer }, 200);
   } catch (error) {
+    if (error instanceof AllProvidersFailedError) {
+      return jsonResponse(
+                {
+          answer:
+            "🐻 Both of BearAI's AI providers are temporarily unavailable. Please try again soon!",
+        },
+        503
+      );
+    } 
+
     if (
       typeof error === "object" &&
       error !== null &&
