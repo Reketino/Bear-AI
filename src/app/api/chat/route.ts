@@ -159,6 +159,10 @@ async function generateAnswer(prompt: string): Promise<string> {
   }
 }
 
+export async function OPTIONS() {
+  
+}
+
 
 export async function POST(req: Request) {
   try {
