@@ -1,4 +1,3 @@
-
 import { buildPrompt } from "@/lib/prompt";
 import { getGroqClient, getGeminiClient } from "@/lib/ai";
 import type { BearMode } from "@/lib/modes";
@@ -27,12 +26,7 @@ const RATE_LIMIT_WINDOW = 10_000;
 const MAX_REQUESTS = 5;
 const MAX_QUESTION_LENGTH = 2_000;
 
-const VALID_MODES: BearMode[] = [
-  "professional",
-  "casual",
-  "fun",
-  "story",
-];
+const VALID_MODES: BearMode[] = ["professional", "casual", "fun", "story"];
 
 globalThis._bearRateLimit ??= new Map<string, RateEntry>();
 
@@ -52,10 +46,7 @@ class EmptyProviderResponseError extends Error {
   }
 }
 
-function jsonResponse(
-  data: { answer: string },
-  status: number
-) {
+function jsonResponse(data: { answer: string }, status: number) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
@@ -70,7 +61,7 @@ function shouldFallbackToGemini(error: unknown): boolean {
   if (error instanceof EmptyProviderResponseError) {
     return true;
   }
-  
+
   if (typeof error === "object" && error !== null && "status" in error) {
     const status = error.status;
 
@@ -142,10 +133,7 @@ async function generateAnswer(prompt: string): Promise<string> {
     if (!shouldFallbackToGemini(groqError)) {
       throw groqError;
     }
-    console.warn(
-      "Groq unavailable. Switching to Gemini.",
-      groqError
-    );
+    console.warn("Groq unavailable. Switching to Gemini.", groqError);
   }
 
   try {
@@ -161,7 +149,7 @@ async function generateAnswer(prompt: string): Promise<string> {
 
 export async function OPTIONS() {
   return new Response(null, {
-    status:204,
+    status: 204,
     headers: corsHeaders,
   });
 }
@@ -169,8 +157,7 @@ export async function OPTIONS() {
 export async function POST(req: Request) {
   try {
     const ip =
-      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-      "unknown";
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
 
     const now = Date.now();
     const entry = rateLimit.get(ip);
@@ -186,7 +173,7 @@ export async function POST(req: Request) {
           {
             answer: "🐻 BearAI is out of breath. Give him a moment!",
           },
-          429
+          429,
         );
       }
 
@@ -196,21 +183,18 @@ export async function POST(req: Request) {
     const body = (await req.json()) as ChatRequest;
 
     const question =
-      typeof body.question === "string"
-        ? body.question.trim()
-        : "";
+      typeof body.question === "string" ? body.question.trim() : "";
 
     const mode = VALID_MODES.includes(body.mode as BearMode)
       ? (body.mode as BearMode)
       : "professional";
-
 
     if (!question) {
       return jsonResponse(
         {
           answer: "No question for BearAI provided.",
         },
-        400
+        400,
       );
     }
 
@@ -219,10 +203,10 @@ export async function POST(req: Request) {
         {
           answer: "That's a little too much for BearAI! Keep it shorter.",
         },
-        400
+        400,
       );
     }
-    
+
     const prompt = buildPrompt(question, mode);
 
     const answer = await generateAnswer(prompt);
@@ -231,13 +215,13 @@ export async function POST(req: Request) {
   } catch (error) {
     if (error instanceof AllProvidersFailedError) {
       return jsonResponse(
-                {
+        {
           answer:
             "🐻 Both of BearAI's AI providers are temporarily unavailable. Please try again soon!",
         },
-        503
+        503,
       );
-    } 
+    }
 
     if (
       typeof error === "object" &&
@@ -249,7 +233,7 @@ export async function POST(req: Request) {
         {
           answer: "🐻 BearAI needs a short break. Try again soon!",
         },
-        429
+        429,
       );
     }
 
@@ -259,7 +243,7 @@ export async function POST(req: Request) {
       {
         answer: "Something went wrong. BearAI will be back shortly!",
       },
-      500
+      500,
     );
   }
 }
