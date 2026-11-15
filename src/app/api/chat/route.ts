@@ -160,9 +160,11 @@ async function generateAnswer(prompt: string): Promise<string> {
 }
 
 export async function OPTIONS() {
-  
+  return new Response(null, {
+    status:204,
+    headers: corsHeaders,
+  });
 }
-
 
 export async function POST(req: Request) {
   try {
@@ -223,28 +225,12 @@ export async function POST(req: Request) {
     
     const prompt = buildPrompt(question, mode);
 
-    const completion =  await getGroqClient().chat.completions.create({
-      model: "openai/gpt-oss-120b",
-      messages: [
-        {
-          role: "system",
-          content: "You are BearAI.",
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      reasoning_effort: "low",
-      max_completion_tokens: 500,
-    });
-
-    const answer =
-      completion.choices[0]?.message?.content ??
-      "Sorry, I don't have enough information to answer that.";
+    const answer = await generateAnswer(prompt);
 
     return jsonResponse({ answer }, 200);
   } catch (error) {
+    
+
     if (
       typeof error === "object" &&
       error !== null &&
