@@ -93,7 +93,7 @@ function shouldFallbackToGemini(error: unknown): boolean {
 
 async function generateWithGroq(prompt: string): Promise<string> {
   const completion = await getGroqClient().chat.completions.create({
-        model: "openai/gpt-oss-120b",
+    model: "openai/gpt-oss-120b",
     messages: [
       {
         role: "system",
@@ -109,10 +109,10 @@ async function generateWithGroq(prompt: string): Promise<string> {
   });
 
   const answer = completion.choices[0]?.message?.content?.trim();
-  
+
   if (!answer) {
     throw new EmptyProviderResponseError("Groq");
-  } 
+  }
 
   return answer;
 }
