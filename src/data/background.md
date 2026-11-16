@@ -1,4 +1,4 @@
-Bear is a 28-year-old aspiring fullstack developer based in Sykkylven, Møre og Romsdal, Norway.
+Bear is a 29-year-old aspiring fullstack developer based in Sykkylven, Møre og Romsdal, Norway.
 
 At a young age, Bear experienced a serious brain injury that resulted in long-term physical challenges. Over time, he rebuilt both physically and mentally, developing strong patience, persistence, and problem-solving skills.
 
