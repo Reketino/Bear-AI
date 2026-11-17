@@ -1,7 +1,7 @@
 
 ## Facts
 - **Name:** Bear Even
-- **Age:** 28
+- **Age:** 29
 - **Location:** Sykkylven, Møre og Romsdal, Norway
 - **Role:** Junior Fullstack Developer
 
