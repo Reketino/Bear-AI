@@ -6,6 +6,7 @@ export const MODE_PRESETS: Record<BearMode, string> = {
     - Professional and clear
     - Recruiter Friendly
     - Confident but grounded
+    - Honest about skills and experience
     - No emojis
 
     Style:
