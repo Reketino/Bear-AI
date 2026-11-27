@@ -2,6 +2,10 @@ import { buildPrompt } from "@/lib/prompt";
 import { getGroqClient, getGeminiClient } from "@/lib/ai";
 import type { BearMode } from "@/lib/modes";
 
+const ALLOWED_ORIGINS = {
+  
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
